@@ -1,0 +1,32 @@
+{
+  "k8s ReplicaSet": {
+    "prefix": "k-replicaset",
+    "description": "k8s ReplicaSet",
+    "body": [
+      "# https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/",
+      "apiVersion: apps/v1",
+      "kind: ReplicaSet",
+      "metadata:",
+      "  name: ${1:myapp}",
+      "  namespace: ${2:default}",
+      "  labels:",
+      "    app: ${1:myapp}",
+      "spec:",
+      "  replicas: ${3:3}",
+      "  selector:",
+      "    matchLabels:",
+      "      app: ${1:myapp}",
+      "  template:",
+      "    metadata:",
+      "      labels:",
+      "        app: ${1:myapp}",
+      "    spec:",
+      "      containers:",
+      "      - name: ${1:myapp}",
+      "        image: ${4:nginx:latest}",
+      "        ports:",
+      "        - containerPort: ${5:80}",
+      "$0"
+    ]
+  }
+}

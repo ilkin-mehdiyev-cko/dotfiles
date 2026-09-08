@@ -1,0 +1,6 @@
+font-size=14
+font-family=SFMono Nerd Font
+theme=Catppuccin Mocha
+cursor-style = block
+adjust-cell-height = 35%
+copy-on-select = clipboard

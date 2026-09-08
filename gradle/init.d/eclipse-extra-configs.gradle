@@ -1,0 +1,39 @@
+// Makes custom dependency configurations visible to Eclipse-based tooling (jdtls/Buildship).
+//
+// Builds that wire a custom configuration onto a source set's classpath, e.g.
+//     sourceSets { main.compileClasspath += configurations.flinkShadowJar }
+// only mutate that source set's FileCollection. Gradle's eclipse model builds its classpath
+// from eclipse.classpath.plusConfigurations instead, so those dependencies never reach jdtls
+// and every import from them shows as unresolved. IntelliJ reads the source sets directly and
+// is unaffected, which is why the same project resolves there but not in Neovim.
+//
+// Only the eclipse model is touched, and only when the eclipse plugin is applied — which
+// Buildship does via its own init script. Normal ./gradlew builds are unaffected.
+//
+// Note: compileOnly needs no entry here; compileClasspath extends it and is already included
+// in plusConfigurations by default.
+
+def EXTRA_CONFIGURATIONS = ['flinkShadowJar', 'shadow', 'provided']
+
+allprojects {
+    plugins.withId('eclipse') {
+        def wire = { p ->
+            def extra = p.configurations.findAll { c ->
+                c.name in EXTRA_CONFIGURATIONS && c.canBeResolved
+            }
+            if (extra) {
+                p.eclipse.classpath.plusConfigurations += extra
+                p.logger.lifecycle(
+                        "[eclipse-extra-configs] ${p.path}: added ${extra*.name.join(', ')} to the eclipse classpath")
+            }
+        }
+
+        // The custom configurations are declared during project evaluation, so wiring has to
+        // wait until the build script has run.
+        if (state.executed) {
+            wire(project)
+        } else {
+            afterEvaluate { p -> wire(p) }
+        }
+    }
+}
