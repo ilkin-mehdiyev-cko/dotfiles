@@ -13,15 +13,17 @@ against your machine without you asking for it.
 | `nvim/` | `~/.config/nvim/` | Neovim config, based on the LazyVim starter |
 | `gradle/init.d/eclipse-extra-configs.gradle` | `~/.gradle/init.d/` | Makes custom Gradle configurations visible to `jdtls` |
 | `zsh/.zshrc` | `~/.zshrc` | oh-my-zsh + powerlevel10k, aliases, sdkman/nvm/bun setup |
+| `claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Claude Code status line: model, context %, session cost, 5h rate-limit bar, folder + git state |
 
 ## Installing
 
 ```sh
-mkdir -p ~/.config/ghostty ~/.gradle/init.d
+mkdir -p ~/.config/ghostty ~/.gradle/init.d ~/.claude
 cp ghostty/config                             ~/.config/ghostty/config
 cp -R nvim/                                   ~/.config/nvim/
 cp gradle/init.d/eclipse-extra-configs.gradle ~/.gradle/init.d/
 cp zsh/.zshrc                                 ~/.zshrc
+cp claude/statusline-command.sh               ~/.claude/statusline-command.sh
 ```
 
 Back up anything already at those paths first — `cp` overwrites.
@@ -57,11 +59,36 @@ classpath.
 It only touches the eclipse model, and only when the eclipse plugin is applied — which is
 something Buildship does for itself. Normal `./gradlew` builds are unaffected.
 
+## The Claude Code status line
+
+Copying the script is not enough — Claude Code only calls it if `~/.claude/settings.json`
+points at it:
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline-command.sh"
+  }
+}
+```
+
+It reads the session JSON Claude Code writes to stdin and prints two lines: model, context
+percentage with token counts, session cost, and a 5h rate-limit bar on the first; repo
+folder, git branch with staged/modified counts, and the worktree name when one is active on
+the second. Context and rate-limit numbers turn yellow then red as they climb.
+
+`jq` is required (`brew install jq`) — without it every field comes out empty. The rest is
+POSIX shell, so no Node or Bash-only features.
+
 ## Not included
 
 Machine- and work-specific files are deliberately left out: shell environment holding
 employer identifiers (`~/.zshenv`), git identity (`~/.gitconfig`), and
 `~/.zprofile` / `~/.profile`, which Docker Desktop and JetBrains Toolbox rewrite on their own.
+
+`~/.claude/settings.json` is also left out — it names private plugin marketplaces — so only
+the `statusLine` block above needs recreating there.
 
 `zsh/.zshrc` keeps its corporate-certificate line, guarded so it does nothing when the file
 is absent.
