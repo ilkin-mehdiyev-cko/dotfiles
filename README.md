@@ -10,7 +10,7 @@ against your machine without you asking for it.
 | Path | Copy to | What it is |
 | --- | --- | --- |
 | `ghostty/config` | `~/.config/ghostty/config` | Ghostty terminal: SFMono Nerd Font, Catppuccin Mocha, block cursor, copy-on-select |
-| `nvim/` | `~/.config/nvim/` | Neovim config, based on the LazyVim starter |
+| `nvim/` | `~/.config/nvim` (symlink) | Neovim config, based on the LazyVim starter |
 | `gradle/init.d/eclipse-extra-configs.gradle` | `~/.gradle/init.d/` | Makes custom Gradle configurations visible to `jdtls` |
 | `zsh/.zshrc` | `~/.zshrc` | oh-my-zsh + powerlevel10k, aliases, sdkman/nvm/bun setup |
 | `claude/statusline-command.sh` | `~/.claude/statusline-command.sh` | Claude Code status line: model, context %, session cost, 5h rate-limit bar, folder + git state |
@@ -20,13 +20,17 @@ against your machine without you asking for it.
 ```sh
 mkdir -p ~/.config/ghostty ~/.gradle/init.d ~/.claude
 cp ghostty/config                             ~/.config/ghostty/config
-cp -R nvim/                                   ~/.config/nvim/
+ln -s "$PWD/nvim"                             ~/.config/nvim   # symlink, so edits land in this repo
 cp gradle/init.d/eclipse-extra-configs.gradle ~/.gradle/init.d/
 cp zsh/.zshrc                                 ~/.zshrc
 cp claude/statusline-command.sh               ~/.claude/statusline-command.sh
 ```
 
-Back up anything already at those paths first — `cp` overwrites.
+Back up anything already at those paths first — `cp` overwrites, and `ln -s` fails if
+`~/.config/nvim` already exists.
+
+`nvim/` is symlinked rather than copied, so plugin updates (`lazy-lock.json`) and LazyVim
+extras (`lazyvim.json`) show up here as uncommitted changes.
 
 ### Dependencies
 
